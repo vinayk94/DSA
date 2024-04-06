@@ -745,6 +745,142 @@ class Solution:
 
         return result
 
+# Definition for a binary tree node.
+# class TreeNode:
+#     def __init__(self, val=0, left=None, right=None):
+#         self.val = val
+#         self.left = left
+#         self.right = right
+
+# inorder: prioritizng left would be, left, parent, right child
+def inorder(root):
+    if not root:
+        return
+    inorder(root.left)
+    print(root.val)
+    inorder(root.right)
+
+# preorder: prioritizing left would be: parent, left child, right child, 
+def preorder(root):
+    if not root:
+        return
+    print(root.val)
+    preorder(root.left)
+    preorder(root.right)
+
+# postorder: prioritizing left would be: left, right, parent
+def postorder(root):
+    if not root:
+        return
+    postorder(root.left)
+    postorder(root.right)
+    print(root.val)
+
+class Solution:
+    def buildTree(self, preorder: List[int], inorder: List[int]) -> Optional[TreeNode]:
+
+        """
+        if not preorder or not inorder:
+            return None
+        # root will be the first element in the preorder tree
+        root = TreeNode(preorder[0])
+
+        # in inorder, root divides elements into right and left subtree
+        # hence we find its node in it
+        mid = inorder.index(preorder[0])
+        # since mid indicates the no. of elements in the left sub tree for a given node
+        # we use this to slice both inorder and preorder arrays to allocate the left elements to the left sub tree
+        # similarly right elements to the right sub tree
+        # in preorder array, since first element is the root, we consider (mid+1) - 1 elements starting from index 1.
+        root.left = self.buildTree(preorder[1:mid+1],inorder[0:mid])
+        root.right = self.buildTree(preorder[mid+1:],inorder[mid+1:])
+
+        return root
         
+        """
+
+        if not preorder or not inorder:
+            return None
+        
+        # Create the root node with the first element of preorder
+        root = TreeNode(preorder[0])
+        stack = [root]
+        inorder_index = 0
+        
+        for i in range(1, len(preorder)):
+            # Get the top node from the stack
+            node = stack[-1]
+            
+            # If the top node's value doesn't match the current inorder element,
+            # create a new node as the left child of the top node
+            if node.val != inorder[inorder_index]:
+                node.left = TreeNode(preorder[i])
+                stack.append(node.left)
+            else:
+                # If the top node's value matches the current inorder element,
+                # pop nodes from the stack until we find a node that doesn't match
+                # or the stack becomes empty
+                while stack and stack[-1].val == inorder[inorder_index]:
+                    node = stack.pop()
+                    inorder_index += 1
+                
+                # Create a new node as the right child of the last popped node
+                node.right = TreeNode(preorder[i])
+                stack.append(node.right)
+        
+        return root
+
+    # if node.val != inorder[inorder_index]:: If the top node's value doesn't match the current inorder element, 
+    # it means we have encountered a left child. We create a new node with the current value from the preorder list 
+    # and make it the left child of the top node. We append this new node to the stack.
+
+    # while stack and stack[-1].val == inorder[inorder_index]:: If the top node's value matches the current inorder element, 
+    # we keep popping nodes from the stack until we find a node that doesn't match or the stack becomes empty. 
+    # We update inorder_index accordingly.
+
+    #  Iterative solutions, like the stack-based approach, often have better performance compared to recursive solutions. 
+    # Iterative code typically has fewer function calls, less overhead, and can be more cache-friendly. 
+    # The stack-based approach leverages iteration to process the preorder and inorder traversals, 
+    # which can lead to faster execution compared to the recursive approach.
+    # It's important to note that the actual performance difference between the stack-based and 
+    # recursive approaches may vary depending on factors such as the input size, 
+    # the structure of the binary tree, and the specific implementation details. 
+    # In some cases, the recursive approach may still perform well, especially for small input sizes or
+    #  when the recursive calls are optimized by the compiler.
 
 
+        
+# Definition for a binary tree node.
+# class TreeNode:
+#     def __init__(self, val=0, left=None, right=None):
+#         self.val = val
+#         self.left = left
+#         self.right = right
+
+from collections import deque
+
+class Solution:
+    def levelOrder(self, root: Optional[TreeNode]) -> List[List[int]]:
+        # level order traversal is nothing but breadth first search
+        queue = deque()
+        result = []
+        if root:
+            queue.append(root)
+
+        while queue :
+            level_size = len(queue)
+            curr_level = []
+
+            for _ in range(len(queue)):
+
+                curr = queue.popleft()
+                curr_level.append(curr.val)
+                if curr.left:
+                    queue.append(curr.left)
+
+                if curr.right:
+                    queue.append(curr.right)
+
+            if curr_level:
+                result.append(curr_level)
+        return result
