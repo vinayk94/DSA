@@ -1586,9 +1586,137 @@ class MyHashMap:
 
                 else:
                     self.buckets[idx] = current.next
+                return
 
             prev = current
             current = current.next
+
+
+# Matrices 
+# Count Unique Paths
+
+class Solution:
+    def uniquePathsWithObstacles(self, obstacleGrid: List[List[int]]) -> int:
+
+        """
+
+        if not obstacleGrid :
+            return 0
+
+        m, n = len(obstacleGrid), len(obstacleGrid[0])
+
+        def countUniquePaths(r,c):
+
+
+
+            # only right and downward
+            # if r >= len(obstacleGrid) or r < 0 or c >= len(obstacleGrid[0]) or c < 0 :
+            if r >= m or c >= n or obstacleGrid[r][c] ==1 :
+                return 0
+
+            if r == m-1 and c == n-1 :
+                return 1
+
+
+            return countUniquePaths(r+1,c) + countUniquePaths(r,c+1)
+
+        return countUniquePaths(0,0)
+
+        """
+        # time limit exceeding for 2^m*n operations O(2^m*n) and space complexity O(m*n)
+        # we perhaps calculate the same paths for each node again and again
+        # and we can use the previous calculations to minimize the calculations on a give node
+
+        if not obstacleGrid or obstacleGrid[0][0] == 1:
+            return 0
+
+        m, n = len(obstacleGrid), len(obstacleGrid[0])
+        memo = {}
+
+        def dfs(r,c):
+
+            if (r,c) in memo:
+                return memo[(r,c)]
+
+            if r >= m or c >=n or obstacleGrid[r][c] == 1 :
+                return 0
+
+            if r == m-1 and c == n-1 :
+                return 1
+
+            memo[(r,c)] = dfs(r+1,c) + dfs(r,c+1)
+
+            return memo[(r,c)]
+
+        return dfs(0,0)
+
+
+# No. of islands
+class Solution:
+    def numIslands(self, grid: List[List[str]]) -> int:
+
+        count = 0
+        if not grid:
+            return 0
+
+        def dfs(r,c):
+
+            if r <0 or r >= len(grid) or c >= len(grid[0]) or c <0 or grid[r][c] == "0":
+                return 
+
+
+            # mark current visited node as 0
+            grid[r][c] = "0"
+
+            dfs(r+1,c)
+            dfs(r-1,c)
+            dfs(r,c+1)
+            dfs(r,c-1)
+
+        for i in range(len(grid)):
+            for j in range(len(grid[0])):
+                if grid[i][j] == "1":
+                    dfs(i,j)
+                    count +=1
+
+        return count
+
+
+
+class Solution:
+    def maxAreaOfIsland(self, grid: List[List[int]]) -> int:
+        
+        if not grid:
+            return 0
+
+
+        def dfs(r,c):
+
+            if r<0 or r >= len(grid) or c<0 or c>= len(grid[0]) or grid[r][c] == 0:
+                return 0
+
+            grid[r][c] = 0
+
+            area = 1
+
+            area += dfs(r+1,c)
+            area += dfs(r-1,c)
+            area += dfs(r,c+1)
+            area += dfs(r,c-1)
+
+            return area
+
+        max_area = 0
+
+        for r in range(len(grid)):
+            for c in range(len(grid[0])):
+                if grid[r][c] == 1:
+                    max_area = max(max_area, dfs(r,c))
+
+        return max_area
+
+
+
 
 
 
