@@ -1595,6 +1595,16 @@ class MyHashMap:
 # Matrices 
 # Count Unique Paths
 
+"""
+Fully Connected Grid or Graph: In a worst-case scenario for DFS, 
+such as a large grid where each cell is connected and 
+you could potentially move from one corner of the grid to the opposite corner (or cover all cells in some pathfinding scenarios), 
+the recursion might need to go as deep as the total number of cells in the grid. 
+If every cell is visited before the recursion starts to unwind (return), the recursion stack could have one frame for each cell.
+Space Complexity Formulation: Hence, the space complexity is described as O(M×N) for a grid. 
+This means that in the worst case, every cell in the grid could be part of the recursion stack at some point if you follow a path covering all cells before hitting a base case.
+"""
+
 class Solution:
     def uniquePathsWithObstacles(self, obstacleGrid: List[List[int]]) -> int:
 
@@ -1715,8 +1725,81 @@ class Solution:
 
         return max_area
 
+## BFS
+
+"""
+The space complexity in the worst case can be up to O(N 2), N^2 represents the total number of cells in the n×n grid. 
+This would be the case if almost every cell needs to be processed and stored in the queue at some point during the BFS execution, 
+such as in a densely packed grid where most cells are '0' and every cell is explored.
+
+In real-world applications, this space complexity implies that BFS can be memory-intensive, particularly for large grids. 
+The need to potentially hold a significant portion of the grid in memory (in the queue) can impact performance and feasibility, 
+depending on the system's available memory.
+
+The time complexity can be expressed as O(8×N^2) because each of the N^2
+nodes could potentially cause up to 8 operations (checking each neighbor). Simplified, this becomes 
+O(N 2), as constant factors are generally omitted in Big O notation.
+
+In BFS for general graphs, every vertex is visited once, and every edge is traversed once. This leads to the 
+O(V+E) complexity. The total operations are based on the sum of the number of vertices (as each is visited once) 
+and the number of edges (as each is considered once to move from one vertex to another).
+
+
+O(n^2) IN GRIDS: The BFS in a grid situation might need to explore all cells (nodes) in the worst case (where 
+N=n^2 for an n×n grid).
+"""
+
+from collections import deque
+class Solution:
+    def orangesRotting(self, grid: List[List[int]]) -> int:
+        
+        m, n = len(grid), len(grid[0])
+        queue = deque()
+        fresh_count = 0
+
+        #count the number of rotten oranges and push them to a que
+        # also lets add a time dimension to these states in the que
+        # that is if there is a rotten orange at [1,1] at the beginning
+        # lets add time elapsed to the same tuple as  (1,1,0)
+        # and then we can use this time elapsed to update the time 
+        # while propagating the rot
+
+        for r in range(m):
+            for c in range(n):
+                if grid[r][c] == 2 :
+                    queue.append((r,c,0))
+                elif grid[r][c] == 1:
+                    fresh_count += 1
+
+        if fresh_count == 0:
+            return 0
+
+        time_elapsed = 0
+        dir = [(0,1),(1,0),(0,-1),(-1,0)]
+
+        while queue:
+            r,c, minute = queue.popleft()
+            for dr, dc in dir:
+                nr, nc = dr+r, dc + c
+                if 0<= nr< m and 0 <= nc < n and grid[nr][nc] == 1:
+                    # make it rot
+                    grid[nr][nc] = 2
+                    # append it to the queue later to propagate from that node as well
+                    queue.append((nr,nc,minute+1))
+                    # decrement fresh orange count
+                    fresh_count -=1
+                    time_elapsed = minute + 1
+
+        if fresh_count:
+            return -1
+        else:
+            return time_elapsed
+                   
 
 
 
+"""
+space I guess is O(m*n) for holding the queue if all the oranges are srotten. and time complexity is also O(2* m*n), 
+as we visit each node at least once ? once for finding rotten ones, once for finding non rotten ones
 
-
+"""
