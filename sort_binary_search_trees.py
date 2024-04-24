@@ -1803,3 +1803,634 @@ space I guess is O(m*n) for holding the queue if all the oranges are srotten. an
 as we visit each node at least once ? once for finding rotten ones, once for finding non rotten ones
 
 """
+
+
+"""
+Use BFS When:
+
+* Finding the Shortest Path: BFS is ideal for finding the shortest path in unweighted graphs because it explores all nodes at the present depth before moving on to nodes at the next depth level. This characteristic ensures that the first time a node is reached, it is by the shortest possible route.
+Example: In a maze or grid, using BFS to find the shortest route from one point to another.
+
+* Level Order Traversal:
+If you need to traverse a tree or graph level by level (e.g., level order traversal in trees), BFS naturally processes elements in this manner using a queue.
+Example: Printing nodes of a tree in level order.
+
+* Spreading Processes:For problems modeling processes that spread or propagate from multiple sources simultaneously, such as in network broadcasting or infection spreading where each step of the process needs to be tracked globally.
+Example: Calculating the minimum time required for all oranges to rot when some are initially rotten.
+
+Use DFS When:
+
+* Checking Connectivity or Component Count: DFS is often simpler to implement recursively and is useful for exploring all nodes in a connected component. It's great for problems where you need to explore as much as possible from each node once you start from it.
+Example: Counting the number of connected components in a graph or grid.
+
+* Finding Cycles: DFS can be more effective in cycle detection in directed and undirected graphs because it explores paths deeply before backtracking.
+Example: Detecting cycles in a graph to check if it’s possible to complete all courses given prerequisite relations.
+
+* Path Finding with Constraints: If the problem involves exploring paths or combinations with certain constraints where not all paths are viable, DFS can effectively use backtracking to explore possible solutions deeply and backtrack on dead ends.
+Example: Solving puzzles like Sudoku or searching for a path that meets specific criteria.
+
+* Stack Space and Recursion: When a solution can be expressed as a recursion, DFS can be directly applied using the system stack. This makes it easier to write for deep exploration tasks.
+Example: Deep search in file systems or complex nested structures.
+
+General Guidelines:
+* BFS is typically used for shortest path problems or when you need to explore all options uniformly. It requires more memory than DFS as it stores all nodes of the current depth level to process the next level.
+* DFS uses less memory and can be more efficient for exploring all possible ways from a given node if the path does not need to be the shortest. However, it can get stuck in deep paths or recursion limits in large graphs.
+
+Choosing Based on the Problem:
+
+* Evaluate the problem’s requirements:
+
+* If the problem asks for the shortest path or level-wise processing, BFS is likely the right choice.
+* If the problem involves exploring configurations, solving puzzles, or needs deep search capabilities, DFS might be more suitable.
+* Ultimately, the specific problem constraints and requirements will guide which traversal method is best suited for the task.
+
+"""
+
+from collections import deque
+class Solution:
+    def updateMatrix(self, mat: List[List[int]]) -> List[List[int]]:
+        
+        # need to find the shortest distance to 0
+        # for each cell
+
+        if mat is None:
+            return mat
+
+        # lets initialize returns
+        m , n = len(mat), len(mat[0])
+
+        #result = [ [0 for _ in range(n)] for _ in range(m)]
+        result =[[float('inf') if mat[i][j] == 1 else 0 for j in range(n)] for i in range(m)]
+
+        # from the example, for each cell, we can go in 4 different directions
+        dir = [(0,1),(1,0),(-1,0),(0,-1)]
+
+        for i in range(m):
+            for j in range(n):
+                if mat[i][j] == 0:
+                    result[i][j] = 0
+                else:
+                    # for each node, we search across the neighbours
+                    # if its one
+                    # we search for its neighborss
+                    # they could be 0 or 1
+                    # if any of the neighbors is 0
+                    # we make the distance corresponding to it 1
+                    # else we make the distance 2 
+                    # and we add them to the queue until as they have not been processed yet
+                    # we would be stopping only when we find any of the neighbors to be 0
+                    # else, we add them to the que
+                    # so, the queues in the next layer, would be ones
+                    # which did not find any 0's in their neighbors
+
+                    # have to aware that in grid/graph problems, layers/ ques 
+                    # are supposed to desrcibe elements which have common properties
+                    # like all 0's belong to the 1st layer
+                    # all the 1's with 0's a immediate neighbors are supposed to be 2nd layer
+                    # and so on
+
+                    # however, if we search from the 1's perspective, we might 
+                    # be traversing the same elements again and again.
+                    # hence better to work from 0's towards 1's.
+
+                    queue = deque([(i,j,0)])
+                    visited = set((i,j))
+                    found = False 
+                    while queue and not found:
+                        r,c, dist = queue.popleft()
+                        for dr, dc in dir:
+                            nr, nc = r+dr, c +dc
+                            if 0<= nr< m and 0<= nc < n and (nr,nc) not in visited:
+                                if mat[nr][nc] == 0:
+                                    result[i][j] = dist + 1
+                                    found = True
+                                    break
+                                else:
+                                    queue.append((nr,nc,dist+1))
+                                    visited.add((nr,nc))
+
+        return result
+
+        """
+        Time Complexity
+        BFS from Each 1:
+        For each cell that is a 1, you potentially perform a BFS to find the nearest 0. 
+        During this BFS, in the worst case, you might end up exploring many or all other cells in the matrix.
+        Suppose there are k cells that are 1 in an m x n matrix. 
+        For each 1, you may, in the worst case, explore the entire matrix if 0s are sparse or located far from these 1s. This results in a complexity that could approach O(k * m * n).
+        
+        Worst-Case Scenario:
+        In the worst-case scenario where the matrix is dense with 1s except for a few 0s, nearly every cell initiates a BFS. If the number of 1s (k) approaches m*n, then the time complexity in the absolute worst case can be as high as O((m * n) * (m * n)) = O(m^2 * n^2). This quadratic complexity occurs because each BFS might need to explore a significant portion of the matrix.
+        
+        Space Complexity
+        Queue and Visited Set:
+        The maximum size of the queue can, in the worst case, 
+        hold a significant fraction of the matrix if many paths are simultaneously exploring multiple directions. The visited set will hold at least as many elements as are in the queue at any time.
+        In the worst case, where BFS needs to explore large parts of the matrix from many starting points, the space complexity can approach O(m * n) due to the queue and the visited set together storing a number of elements proportional to the size of the matrix.
+        
+        Result Matrix:
+        You also maintain a result matrix of size m x n, which stores the distances. However, this is not additional space in terms of complexity analysis since it's required for the output and matches the input size.
+        
+        """
+
+
+    
+
+        # instead we can start from 0's and move towards 1s like rotten oranges.
+        # lets start from the layer which has all 0's and it is the base layer as it 0 distance from 0's.
+        # now we look into the neighbors of the elements in this layer
+        # if they are zeros, its fine, we do not add them to the que, else we add them to the que and 
+        # update their distance to 0+1 = 1 as they are only 1 step away from the 0's layers
+        # once we are done with the 1st layer, we move to the next layer, 
+        # then look into their neighbors, if they are 0, great.. 
+        # Hmm, nope this condition doesnot consider the simultaneous update of all the neighbors of all the zeros
+        # we need a better condition to check, we can check their current result from 0's.
+        # if they are infinity as we initiated earlier, it implies they are untouched
+        # then we add 1 unit distance to the parent cell's distance to 0th layer and allocate the new distance to the cell.
+        # else, if they are already tocuhed, implies they are 1 unit away from the zeroth layer, we do nothing
+        # the better condition is current distance of neigh bour from 0 if greater than the parent cells distance + 1
+        # if greater, we update the neighbor cell's distance with parents distance +1, as it is the minimum possible distance
+        # if we check pure distance without 1, we are forgetting that we are checking the neighbor of the cells and 
+        # that we are checking if a cell and its neighbors both are at the same distance from the nearest possible 0.
+        
+        
+class Solution:
+    def updateMatrix(self, mat: List[List[int]]) -> List[List[int]]:        
+        if not mat:
+            return -1
+
+        m,n = len(mat),len(mat[0])
+
+        result = [[0 if mat[i][j]==0 else float("inf") for j in range(n) ] for i in range(m)]
+        
+        queue = deque()
+        # know where the 0's are currently
+        for i in range(m):
+            for j in range(n):
+                if mat[i][j] == 0:
+                    queue.append((i,j))
+
+        
+
+        dir = [(0,1), (1,0),(-1,0),(0,-1)]
+        while queue:
+            r,c = queue.popleft()
+            for dr,dc in dir:
+                nr, nc = dr + r , dc+ c
+                if 0<= nr < m and 0<=nc < n and result[nr][nc] > result[r][c] + 1 :
+                    result[nr][nc] = result[r][c] + 1
+
+                    queue.append((nr, nc))
+
+        return result 
+
+        # we visit each node once to get 0's and 1's, hence its O(m*n)
+        # then while doing BFS, we consider BFS and its neighbors again, 
+        # and we update the distance of neighbors, only if further shortest distance can be found.
+        # this operation can again go not greater than O(m*n). 
+        # coz once we found the nearest distance from a 0, we most probably wont be updating it again
+        # hence less additions to the que as we move forward.
+
+        # space complexity : O(m*n), 1 for queue, 1 for result set.
+
+
+
+from collections import defaultdict
+
+# we use default dict for preparing adjacency list, useful when creating new adjancency list for a graph
+# like 0 is a pre requisite for courses both 1 and 2
+# like it would be helpful if we dont know keys and encounter them dynamically
+# but here we know the nodes.
+
+# prereq = {0:[1,2]}
+#  and we traverse from 0 and check for the prerequisites of 1 and 2
+# if any of them have 0 as pre requisite then its done, we found a cycle
+# and we return False as the completion is impossible
+
+# only thing is that we need to know that we have already tracked 1 and 2.
+# how do we do this ??
+# lets say we are at a course 0, and we mark it as visiting
+# now we move to the next layers, that is the next level courses 1  and 2
+# and we mark them again as visiting, as we are dealing with them for the first time.
+# and as we move to the courses, for which each of the courses 1 and 2 is prerequisites
+# and if we find 0 there again, and we can find it by looking at the flag of 0, if its marked as visiting
+# it implies, we have to study 0 again while using it as a prerequisite for the 2nd layer courses
+# hence cycle found, else all good.
+
+# question says that there are n-1 courses labeled from 0 to n-1
+# we can track all the n courses in visit window
+# if 0, not yet visited, 1 visiting, 2 visiting done
+
+class Solution:
+    def canFinish(self, numCourses: int, prerequisites: List[List[int]]) -> bool:
+
+        #next_courses = defaultdict(list)
+
+        next_courses= {i: [] for i in range(numCourses)}
+
+        # lets construct an adjancency list, where we have current courses, which would lead to next courses
+        # like if  0 is a prereq for 1,2, then 0, leads to both 1 and 2 {0:[1,2]}
+
+        for dest, src in prerequisites:
+            if src >= numCourses or  dest >= numCourses:
+                return False
+            next_courses[src].append(dest)
+
+
+        visited = [0]*numCourses
+
+        def dfs(course):
+
+            if visited[course] == 1 : # if visiting again
+                return False # entered cycle
+
+            if visited[course] == 2:
+                return True # completely processed a course, without encountering any cycle
+
+
+            # visiting course for the first time
+            # set to visiting
+            visited[course] = 1
+
+            # recurse on all the course, that depends on this course
+            for next_course in next_courses[course]: # we should not find a cycle
+                if not dfs(next_course):             # it implies every node that we are seeing should not already be in a visited mode
+                    return False            # here we are trying to work on all the nodes
+
+            visited[course] = 2 # if it broke no where till now, mark it as fully processed.
+
+            return True
+
+
+        # start dfs on each course if not visited already
+        for i in range(numCourses):
+            if visited[i] == 0:
+                if not dfs(i): # you cannot complete dfs without a cycle
+                    return False
+
+        return True
+
+        # prerequisites represented by [1,0] represents a directed edge from 0 to 1, 
+        # so, to process a node for course 1, we need to process the node and also the prerequisites
+        # constructing adjacency lists, requires all the edges this takes O(E)
+        # doing DFS involves traversing each node and also the each edge in the worst case. hence O(E+V)
+
+        # space complexity: adjacency list stores all the edges and vertices .O(V+E)
+        # also a bit for visited status, for all the nodes O(V) and recusrion tack depth can also go up to O(V)
+        # in the case of no cycles, with linear dependency upto V.
+        # so space complexity is O(V+E)
+
+class Solution:
+    def rob(self, nums: List[int]) -> int:
+        if not nums:
+            return 0
+        if len(nums) == 1:
+            return nums[0]
+        if len(nums) == 2:
+            return max(nums)
+
+        dp = [0]*len(nums)
+        dp[0] = nums[0]
+        dp[1] = max(nums[0], nums[1]) # you either keep the amount you have till now, 
+        # or to take whats available in the second house
+
+        for i in range(2, len(nums)):
+            # rob only if ot yields value of robbing and adding it to 1 unit from previous house is greater than than previous valu
+            dp[i] = max(dp[i-1], nums[i]+dp[i-2])
+
+        return dp[-1]
+
+        # space complexity is O(n) to store amount stored status.
+        # time complexity is O(n) as we just go through each node once.
+
+        
+
+class Solution:
+    def climbStairs(self, n: int) -> int:
+        # fibonacci sums
+
+        if n==1:
+            return n
+        if n==2:
+            return 2
+        
+        dp = [0]*(n+1)
+        dp[0] = 1
+        dp[1] = 1
+
+        for i in range(2,n+1):
+            dp[i] = dp[i-1] + dp[i-2]
+
+        return dp[n]
+
+class Solution:
+    def longestCommonSubsequence(self, text1: str, text2: str) -> int:
+        
+        # longest common subsequence
+        #
+        # we 
+
+        """
+        def LCS(i,j):
+            if i< 0 or j < 0:
+                return 0
+
+            if text1[i] == text2[j]:
+                return 1+ LCS(i-1, j-1)
+            
+            if text1[i] != text2[j]:
+                return max(LCS(i,j-1), LCS(i-1,j))
+
+        return LCS(len(text1)-1, len(text2)-1)
+        """
+
+        # however, for each cell, we are doing two function calls
+        # that is for equal to or not equal to
+        # and also, we may be doing the same calculations again in
+        # LCS(i, j-1) and LCS(i-1, j) e.g. LCS(i-1,j-1)
+        # this is brute force and doesnot involve any optimization
+        # AND the time complexity is 2^O(m+n), where m and n are the length of the strings
+        # at any point we decrement either i, or j or both in diagonal way
+        # lets say if they dont match at all, we might have a recursion call, who length
+        # is m+n , as decrement i,j from m-1 to 0
+        # thus it is O(m+n)
+        # space complexity comes from recursion stack and each call uses some
+        # stack space, in the worst case, we might have to store the entire lengths of both the strings
+        # as we traverse them together and hence space complexity = O(m+n)
+        # maximum depth of the recursion = m+n
+
+        # hence it takes more time
+        # since we know that LCS(i-1, j-1) is being calculated for both
+        # LCS(i, j-1) and LCS(i-1, j), we can store these calculations once and reduce the redundancy
+
+        # may be dictionary and call stack is causing too much overhead
+        
+        """
+        memo = {}
+
+        def LCS(i,j):
+            if i< 0 or j<0 :
+                return 0
+
+            if (i,j) in memo:
+                return memo[(i,j)]
+            
+            if text1[i] == text2[j] :
+                memo[(i,j)] = 1 + LCS(i-1, j-1)
+                # return memo[(i,j)]
+
+            else: #text1[i] != text2[j]:
+                memo[(i,j)] = max(LCS(i-1,j) , LCS(i,j-1))
+                # return memo[(i,j)]
+
+            return memo[(i,j)]
+
+        return LCS(len(text1)-1, len(text2)-1)
+
+        """
+        ###
+
+        m, n = len(text1), len(text2)
+        dp = [[0]* (n+1)  for _ in range(m+1)]
+
+        for i in range(1,m+1):
+            for j in range(1, n+1):
+                if text1[i-1] == text2[j-1] :
+                    # if matches, we take the dp value including both the characters till the last time
+                    dp[i][j] = 1 + dp[i-1][j-1] #move to the next element for matching
+                else:
+                    # if doesnot match, we consider dp value, which ever gives the maximum value, by excluding the not matching character.
+                    dp[i][j] = max(dp[i-1][j], dp[i][j-1])
+
+        return dp[m][n]
+
+
+
+class Solution:
+    def hammingWeight(self, n: int) -> int:
+        count = 0
+        while n>0:
+            if n & 1 == 1:
+                count += 1  # if anding with 1 works, it implies they both have 1 in the units place
+            n = n >> 1
+            # this increments binary operations to the right
+        return count
+
+        """
+        The purpose of this operation in the context of counting 1s in the binary representation 
+        is to progressively reduce n by removing the examined least significant bit (LSB) 
+        after it's been accounted for:
+
+        Progress Through Bits: Each bit shift exposes a new LSB to be checked (if n & 1 == 1). 
+        This way, each bit of the original n is eventually checked as it 
+        becomes the LSB through successive right shifts.
+
+
+        The time complexity of this function is O(k), where k is the number of bits in the number n. 
+        Since the function iterates through each bit of the integer once, 
+        the complexity directly depends on the bit-length of the number. 
+        For a standard 32-bit integer, this would effectively be O(32), 
+        which is considered O(1) under the assumption of a constant bit length. 
+        For arbitrary-length integers, the complexity is O(log n), where n is the value of the integer 
+        (as the number of bits required to represent n is proportional to the logarithm of n).
+
+        Space Complexity:
+        The space complexity is O(1) because the amount of space used does not depend on the size of the input 
+        but only on a fixed number of local variables (count and n). 
+        """
+
+
+
+class Solution:
+    def countBits(self, n: int) -> List[int]:
+
+        """
+        ans = [0]*(n+1) # n+1 to include no. of 1's in binary representation of 0 as well
+        for i in range(n+1):
+            count = 0
+            x = i
+            while x > 0:
+                if x & 1 == 1:
+                    count += 1
+                x = x >> 1
+
+            ans[i] = count
+
+        return ans
+
+        """
+        # time complexity: each number has log n bits on average and since we count bits for every 
+        # i upto n, it will be O(nlogn)
+        # space complexity = O(n) as we are storing the counts of 1 for each number
+
+        # however, we can use the previous calculated values
+        # The number of 1s for any integer i can be quickly computed by 
+        # using the results from integer i >> 1 (i.e., i/2) (in binary representation, 
+        # shifting  by 1 bit implies dividng by 2)and 
+        # adding 1 if the least significant bit of i is 1.
+
+        ans = [0]* (n+1)
+        for i in range(1, n+1):
+            ans[i] = ans[i >> 1] + (i & 1)
+        return ans
+
+        """
+        Time Complexity:
+        O(n): In the dynamic programming approach where each number i's count of 1s is determined by ans[i] = ans[i >> 1] + (i & 1), 
+        each number from 0 to n is processed exactly once. 
+        The computation for each number involves a constant-time bit-shift operation and a constant-time bitwise AND operation, 
+        plus a constant-time addition and array indexing operation. 
+        Hence, the overall time complexity is linear with respect to n.
+
+        Space Complexity:
+        O(n): The space complexity is primarily dictated by the need to store the count of 1s for each number from 0 to n.
+        This requires an array of length n+1, so the space complexity is linear with respect to n.
+        """
+
+
+
+
+class Solution:
+    def reverseBits(self, n: int) -> int:
+        reversed = 0
+        for _ in range(32):
+            # shift reversed by 1 bit to make space for the extracte lsb from n
+            reversed = reversed <<  1
+            # extract the LSB in n
+            LSB = n & 1
+
+            # add it to the right most portion
+            reversed = reversed | LSB
+
+            # then again shift it towards left at every iteration for 32 times
+
+            n = n >> 1
+
+        return reversed
+
+        # time complexity = O(1) we act on each bit incrementally and its only 32 times constant
+        # space complexity is also constant O(1)
+
+class Solution:
+    def maxSubarraySumCircular(self, nums: List[int]) -> int:
+
+        """
+        newNums = nums + nums[:-1]
+
+        currSum = maxSum = newNums[0]
+
+        arr_i = 0
+        for i in range(1, len(newNums)):
+
+            if currSum < 0:
+                currSum = newNums[i]
+                arr_i = i
+            else:
+                currSum += newNums[i]
+
+            if i - arr_i>= len(nums)-1:
+                
+                currSum -= newNums[arr_i] 
+                arr_i +=1
+            maxSum = max(maxSum, currSum)
+        return maxSum
+        """
+        # not working
+
+        # went out with the simple
+        """
+        def kadane(arr):
+            currSum = maxSum = arr[0]
+            for i in range(1, len(arr)):
+                currSum = max(arr[i], currSum + arr[i])
+                maxSum = max(maxSum, currSum)
+            return maxSum
+
+        n = len(nums)
+        newNums = nums + nums[:-1]
+        maxSum = float("-inf")
+        for i in range(0,2*n - 1):
+            currNums = newNums[i:n+i]
+            maxSum = max(maxSum, kadane(currNums))
+        
+        return maxSum
+        """
+
+        # but this is O(n^2)
+
+        # find maxSum of normal array
+        # if it exists in the normal array, then thats fine
+        # however, if it exists in the circular part
+        # then, we need to check the max value including the circular part
+        # however, if a max sum subarray exists in circular property, then the remaining elements form the
+        # minimum sub array in that circular property
+
+        # if we find minimum sum and subtract it from the total sum, it gives the max sum sub array
+        # that includes the circular property.
+
+        # for a circular array, maxSum + minSum should be equal to total sum
+        # so, we need to find minSum
+        # for that lets just negative of the array and find the maxSum again to get minSum
+
+        def kadane(arr):
+            maxSum = currSum = arr[0]
+            for i in range(1, len(arr)):
+                currSum = max(currSum + arr[i], arr[i])
+                maxSum = max(maxSum, currSum)
+            return maxSum
+
+        maxSum = kadane(nums)
+
+        negArray = [-num for num in nums]
+        minSum = -1 * (kadane(negArray))
+
+        totalSum = sum(nums)
+
+        # however, we need to make sure that we are not picking the entire array
+        # if minSum == totalSum, it implies we picked the entire array
+        
+        
+        if minSum == totalSum:
+            return maxSum
+
+        maxSum_circular = totalSum - minSum
+
+        return max(maxSum_circular, maxSum)
+        
+
+
+class Solution:
+    def maxTurbulenceSize(self, arr: List[int]) -> int:
+
+        # need to have a clever way that alternate sign is happening
+        # lets say a represents i > i+1 and b represents i+1 < i+2 
+        # we know that signs have alternated and we just need to propagate the value from a to b
+        # and b to a as long as we find alternating
+        # lets say we encountered element less than previous element
+        # it implies less than operator
+        # but if we use b to track if current element is greater than previous
+        # it implies turulence has occured and we need to consider this length
+        # we do this by propagation, we add to the flag which has occured and also add the previous flag to it
+        # before resetting b, we propagate b value to a and add 1 to a
+        #
+        if not arr:
+            return 0
+
+        n = len(arr)
+        dec = inc = 1
+        max_len = 1
+
+        for i in range(1,n):
+            if arr[i-1] < arr[i]:
+                inc = dec+1
+                dec = 1
+            elif arr[i-1] > arr[i]:
+                dec = inc +1
+                inc = 1
+            else:
+                inc = dec = 1
+            max_len = max(max_len, inc,dec)
+
+        return max_len
+
+

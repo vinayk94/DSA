@@ -404,3 +404,42 @@ def quicksort(arr):
 ```
 
 While elegant, this method creates new lists for left, middle, and right in each recursive call, a total of O(n), which can lead to higher memory usage compared to in-place partitioning strategies, where you get memory advantage relative to Merge Sort.
+
+Use BFS When:
+
+* Finding the Shortest Path: BFS is ideal for finding the shortest path in unweighted graphs because it explores all nodes at the present depth before moving on to nodes at the next depth level. This characteristic ensures that the first time a node is reached, it is by the shortest possible route.
+Example: In a maze or grid, using BFS to find the shortest route from one point to another.
+
+* Level Order Traversal:
+If you need to traverse a tree or graph level by level (e.g., level order traversal in trees), BFS naturally processes elements in this manner using a queue.
+Example: Printing nodes of a tree in level order.
+
+* Spreading Processes:For problems modeling processes that spread or propagate from multiple sources simultaneously, such as in network broadcasting or infection spreading where each step of the process needs to be tracked globally.
+Example: Calculating the minimum time required for all oranges to rot when some are initially rotten.
+
+Use DFS When:
+
+* Checking Connectivity or Component Count: DFS is often simpler to implement recursively and is useful for exploring all nodes in a connected component. It's great for problems where you need to explore as much as possible from each node once you start from it.
+Example: Counting the number of connected components in a graph or grid.
+
+* Finding Cycles: DFS can be more effective in cycle detection in directed and undirected graphs because it explores paths deeply before backtracking.
+Example: Detecting cycles in a graph to check if it’s possible to complete all courses given prerequisite relations.
+
+* Path Finding with Constraints: If the problem involves exploring paths or combinations with certain constraints where not all paths are viable, DFS can effectively use backtracking to explore possible solutions deeply and backtrack on dead ends.
+Example: Solving puzzles like Sudoku or searching for a path that meets specific criteria.
+
+* Stack Space and Recursion: When a solution can be expressed as a recursion, DFS can be directly applied using the system stack. This makes it easier to write for deep exploration tasks.
+Example: Deep search in file systems or complex nested structures.
+
+General Guidelines:
+
+* BFS is typically used for shortest path problems or when you need to explore all options uniformly. It requires more memory than DFS as it stores all nodes of the current depth level to process the next level.
+* DFS uses less memory and can be more efficient for exploring all possible ways from a given node if the path does not need to be the shortest. However, it can get stuck in deep paths or recursion limits in large graphs.
+
+Choosing Based on the Problem:
+
+* Evaluate the problem’s requirements:
+
+* If the problem asks for the shortest path or level-wise processing, BFS is likely the right choice.
+* If the problem involves exploring configurations, solving puzzles, or needs deep search capabilities, DFS might be more suitable.
+* Ultimately, the specific problem constraints and requirements will guide which traversal method is best suited for the task.
