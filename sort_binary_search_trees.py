@@ -2434,3 +2434,397 @@ class Solution:
         return max_len
 
 
+class Solution:
+    def containsNearbyDuplicate(self, nums: List[int], k: int) -> bool:
+
+        """
+
+        for L in range(len(nums)):
+            # for R, we do from L to L+k+1
+            for R in range(L+1, min(len(nums), L+k+1)):
+                if nums[L] == nums[R]:
+                    return True
+        return False
+
+        """
+
+        
+
+        window = set()
+        L = 0
+
+        for R in range(len(nums)):
+            if R-L  > k :
+                window.remove(nums[L])
+                L+=1
+            if nums[R] in window:
+                return True
+
+            window.add(nums[R])
+
+        return False
+
+class Solution:
+    def minSubArrayLen(self, target: int, nums: List[int]) -> int:
+
+        #
+        
+        if sum(nums) < target:
+            return 0 
+
+        min_length = float("inf")
+        L = R =0
+        currSum = 0
+
+        for R in range(len(nums)):
+            currSum += nums[R]
+
+            while currSum >= target:
+                min_length = min(min_length, R-L+1)
+                currSum -= nums[L] 
+                L +=1
+
+        return min_length
+        
+class Solution:
+    def numOfSubarrays(self, arr: List[int], k: int, threshold: int) -> int:
+        
+        # we need to find sub array of size k
+        # we can maintain a set to store them, if it goes beyond set, we can remove them
+        # and every time average goes above or beyond threshold, we increase the counter
+
+        # sets are not suitable, as we are not looking for any dupliates or missing elements
+        # we can just use a variable which tracks current sum and then divide it by k, to get current average
+
+        """
+        currentSum = 0
+        L = 0
+        counter = 0
+
+        for R in range(len(arr)):
+            if R-L + 1  > k :
+
+                currentSum = currentSum - arr[L]
+                L +=1
+
+            currentSum += arr[R]
+
+            if currentSum/k >= threshold:
+                counter +=1
+            
+        return counter
+        """
+
+        # ok the question specifically asks for window size of k and the average not just either of them
+
+        currentSum = 0
+        counter = 0
+        L =0
+
+        for R in range(len(arr)):
+            currentSum += arr[R]
+
+            if R-L + 1 == k:
+                if currentSum/k >= threshold:
+                    counter += 1
+
+                currentSum -= arr[L]
+                L += 1
+
+        return counter
+
+
+class Solution:
+    def lengthOfLongestSubstring(self, s: str) -> int:
+
+        # without repeating character
+        # implies we always need to quickly check if we have already added
+        # better to go with set
+
+        """
+        # set is appropriate but requires resetting
+        window = set()
+        result_string = {}
+        max_len = 0
+        output = ""
+        count = 0
+        L = 0
+        for R in range(len(s)):
+            l = s[R]
+
+            if l in window:
+                #result_string[count] = s[L:R+1]
+                window = set()
+                count = 0
+                L = R # this doesnot work as we might be skipping few elements in betwee
+                # which does not have duplicate
+                # better way would to have map for each character
+                # which gives index and we just right of this index
+                
+
+            if l not in window:
+                window.add(l)
+                count +=1
+            max_len = max(max_len,count )
+
+        #return result_string[max(result_string.keys())]
+        return max_len
+
+        """
+        char_map = {}
+        max_len = 0
+        L =0
+
+        for R in range(len(s)):
+            if s[R] in char_map and char_map[s[R]] >= L:
+                L = char_map[s[R]] +1
+            char_map[s[R]] = R
+
+            max_len = max(max_len, R-L+1)
+
+        return max_len
+    
+class Solution:
+    def characterReplacement(self, s: str, k: int) -> int:
+        
+        """
+        if not s:
+            return 0
+        max_len = 0
+        #curr_len = 1
+        L = 0
+        counter = 0
+        prev = s[0]
+        for R in range(1,len(s)):
+            if s[R-1] != s[R] and counter == k:
+                L +=1
+                counter =0
+                prev = s[L]
+                #curr_len = 1
+
+            if s[R-1] != s[R] and prev == s[R-1] :
+                counter += 1
+                #curr_len += 1
+
+            max_len = max(max_len, R-L+1)
+
+        return max_len
+        """
+
+        # I was only checking one by one character and immediately resetting the counter
+        # if it reaches K, but as this only looks for making changes in the consecutive elements
+        # but, if we have non consectuive characters, then we might need to do changes some where in between
+        # and it could effect the solution
+
+        # instead, for any given string, if we are able to track the most frequent character
+        # and count the number of changes to be made to make it further freuquent,
+        # then we may find the longest uniform substring that obtained by replacing k times.
+
+        max_freq = 0  #to find the max freq of each character
+        char_count = {} #to store the count of each character
+        max_len =0 
+
+        L = 0
+
+        for R in range(len(s)):
+            char_count[s[R]] = char_count.get(s[R],0) + 1
+            max_freq = max(max_freq, char_count[s[R]])
+
+            while (R-L+1) - max_freq > k :
+                char_count[s[L]] -=1
+                L +=1
+                if char_count[s[L]] < max_freq:
+                    max_freq = max(char_count.values())
+
+            max_len = max(max_len, R-L+1)
+
+        return max_len
+
+
+class Solution:
+    def isPalindrome(self, s: str) -> bool:
+
+        """
+        filtered_chars = [char.lower() for char in s if char.isalnum()]
+        clean_s = "".join(filtered_chars)
+        L = 0
+        R = len(clean_s)-1
+        while L< R:
+            if clean_s[L] != clean_s[R]:
+                return False
+
+            L +=1
+            R -= 1
+            
+        return True
+        """
+        L,R = 0 , len(s) - 1
+        while L < R:
+            while L < R and not s[L].isalnum():
+                L += 1
+            while L < R and not s[R].isalnum():
+                R -=1
+
+            if s[L].lower() != s[R].lower():
+                return False
+
+            L+=1
+            R -=1
+
+        return True
+        
+class Solution:
+    def removeDuplicates(self, nums: List[int]) -> int:
+
+        """
+        L = 0
+        R = 0
+
+        # lets use L to traverse
+        #  we move R only to place unique elements
+        prev = nums[0]
+        for i in range(len(nums)):
+            
+            if prev != nums[i]:
+                R += 1
+                L = 0
+            else:
+                L += 1
+
+            prev = nums[i]
+
+        return R+1
+
+        """
+
+        if not nums:
+            return 0
+
+        L = 0
+
+        for R in range(1, len(nums)):
+            if nums[L] != nums[R]:
+                 L +=1
+                 nums[L] = nums[R]
+
+        return L+1 
+            
+class Solution:
+    def removeDuplicates(self, nums: List[int]) -> int:
+
+        L = 1
+        count = 1
+
+        for R in range(1, len(nums)):
+            if nums[R] == nums[R-1] :
+                count += 1
+            else:
+                count = 1
+
+            if count <= 2:
+                nums[L] = nums[R]
+                L +=1
+               
+
+        return L
+    
+
+class Solution:
+    def maxArea(self, height: List[int]) -> int:
+        
+        # the thing is we can do brute force and search for best combination and return them
+        # it will O(n^2)
+
+        # also, the area is not just multiplication
+        # its getting the height indicated by array values, infact its the minimum of those heights
+        # and getting the distance between them
+
+        # and we already a width dimension, along which we can try to maximize the area by 
+        # chosing the wide pointers, heights at the edges
+        # now question becomes how to traverse from L,R at the initial left and right pointers
+        # the thing is we should not reduce width for maximum area
+        # so, of both the heights that is possible, we will retain the pointer which has max h value
+        # so that we can have least reduction in area by reducing width with the contraction.
+
+        if not height :
+            return 0
+
+        L = 0
+        R =len(height) - 1
+        max_area = 0
+
+        while L < R :
+            h1 = height[L]
+            h2 = height[R]
+            area = min(h1, h2)*abs(R-L)
+            max_area = max(max_area,area)
+
+            if h1 > h2:
+                R -= 1
+            elif h1 < h2:
+                L +=1
+            else:
+                L +=1
+                R -= 1
+
+        return max_area
+
+
+class Solution:
+    def trap(self, height: List[int]) -> int:
+
+        # at any bar, or position, the max water that can be stored at the position
+        # would be [3,4,2] - no water no where
+        # for [3,1,2] - no water at 3,2. at 1 height would (3-2) - 1 as the water is its above
+        # for [3,0,2,4,1,0] # we do not know left and right max dirfectly
+        # ofcourse we can know, like, we need to know left and right max for each bar
+        # for each bar, we can scan left and right side of each time and calculate it
+        # otherwise, we can precompute and store left max and right max arrays and do it
+        3 
+
+        if not height :
+            return 0
+
+        L, R = 0, len(height) - 1
+        left_max = height[0]
+        right_max = height[-1]
+        water = 0
+
+        # water trapped at any point is dependent on not only the adjacent elements
+        # as we can see from the given the given example, water trapped at 0 not dependent between 
+        # on the adjacent height, but is dependent on the max height from either height seen fo far
+        # moreover we do not fill each bar in single direction
+
+        
+        # Water trapping is not determined by adjacent bars alone but by the highest bars
+        # to the left and right of each position across the entire array.
+        # This process requires knowing the maximum height encountered so far from both directions,
+        # which we track with left_max and right_max.
+
+        # The algorithm oscillates between moving the left or right pointer inward,
+        # depending on which side currently has the lesser boundary height. This strategy
+        # ensures that the calculation for trapped water is conservative and accurate because
+        # it relies on the confirmed shorter side of the boundary to determine potential water trapping.
+
+
+        while L < R:
+            if height[L] <= height[R]:
+                # Move the left pointer when the left side is lower or equal.
+                # This approach guarantees that the right_max is a reliable boundary because
+                # it is either higher or equal to the left_max, thus safely containing the water above the current left bar.
+                if height[L] >= left_max: # if the current height is greate than left_max so far,
+                    left_max = height[L]  # no water gets trapped
+                else:
+                    water += left_max - height[L] #otherwise water gets trapped
+                L+=1
+
+            else: 
+                if height[R] >= right_max:
+                    right_max = height[R]
+                else:
+                    water += right_max - height[R]
+                R -=1
+
+        return water
+
+        
