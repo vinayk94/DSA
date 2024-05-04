@@ -2826,5 +2826,381 @@ class Solution:
                 R -=1
 
         return water
+    
+
+# Definition for singly-linked list.
+# class ListNode:
+#     def __init__(self, val=0, next=None):
+#         self.val = val
+#         self.next = next
+class Solution:
+    def pairSum(self, head: Optional[ListNode]) -> int:
+
+        # find mid point
+        # then reverse the linked list
+        # 
+        fast = head
+        slow = head
+
+        while fast and fast.next:
+            slow = slow.next
+            fast = fast.next.next
+
+        midpoint = slow
+        # how to reverse a linked list
+        # need to reverse
+        prev = None
+        current = midpoint
+        while current:
+            next_node = current.next
+            current.next = prev
+            prev = current
+            current = next_node
+
+        # prev
+        max_sum = 0
+        first_half = head
+        second_half = prev
+
+        while first_half and second_half :
+             max_sum = max(max_sum, first_half.val + second_half.val)
+             first_half = first_half.next
+             second_half = second_half.next
+
+        return max_sum
+
+
+        # head becomes tail and tail becomes head
+        
+
+# Definition for singly-linked list.
+# class ListNode:
+#     def __init__(self, x):
+#         self.val = x
+#         self.next = None
+
+class Solution:
+    def detectCycle(self, head: Optional[ListNode]) -> Optional[ListNode]:
+        if not head or not head.next:
+            return None 
+        fast = slow = head
+
+        # lets assume a distance of D from head to start of the cycle
+        # lets assume fast and slow meet at P from start of the cycle
+        # and lets assume C to be the length of the cycle
+        while fast and fast.next:
+            slow = slow.next
+            fast = fast.next.next
+            if slow == fast:
+                #break
+
+        # slow is currently at P and has travelled D+P distance
+        # since fast travels twice as fast as slow
+        # it must have travelled 2 (D+P) distance
+        # however, since it is moving in cycles
+        # we can say, it has travelled D + P + some multiple of C distance
+        # D+P + nC = 2*(D+P), D+ P = nC
+        # for n = 1, D+ P = C, and if slow is already at P from the start of the cycle
+        # it just has to travel D distance to reach the start.
+        # and we know that D is the distance from head to start of the cycle
+        # since we do not know D, lets consider another pointer starting from head
+        # and move both slow2 and slow each step until they meet
+        # the point they meet should be start of the cycle
+        
+        #if not fast or not fast.next:
+        #    return None
+                slow2  = head
+                while slow and slow2 :
+                    if slow == slow2:
+                        return slow
+                    slow = slow.next
+                    slow2 = slow2.next
+class Solution:
+    def findDuplicate(self, nums: List[int]) -> int:
+        # duplicate number implies cycle
+        # we can do this sets, but it costs, O(n) space
+        # they say it should be in O(1) space
+
+        """
+        fast = slow = nums[0]
+        i = 0
+        while i < len(nums)-2:
+            fast = nums[i+2]
+            slow = nums[i+1]
+            i+=1
+            if fast == slow:
+                return slow
+
+        """
+
+        # nums contains n + 1 integers where each integer is in the range [1, n] inclusive.
+        # so we can treat  values as integers and we can keep traversing the array
+        # and we wont go out of index
+        # and since we take values as index, we have a chance that both our pointers meet at some point
+
+
+        # The presence of a duplicate means that at least one number in the range from 1 to n appears 
+        # more than once. This duplicate creates a cycle because it will index back to an already accessed
+        # index at some point, as you follow from index to index using the values as pointers.
+
+        fast = nums[nums[0]]
+        slow = nums[0]
+        while slow != fast:
+            slow = nums[slow]
+            fast = nums[nums[fast]]
+            # however there is no guarantee that the point they meet is where the duplicate is
+            # the presence of duplicate led to move them in circles
+            # but there is no guarantee that they meet at the duplicate
+            # for e.g. [1,3,4,2,2] in this case both the duplicates 2,2 point to the same index 3
+
+            # fast = 3, slow = 1
+            # fast = nums[nums[3]] = nums[2] = 4, slow = nums[1] = 3
+            # fast = nums[nums[4]] = nums[2] = 4, slow = nums[3] = 2
+            # fast = nums[nums[4]] = nums[2] = 4, slow = nums[2] = 4 # but 4 is not the duplicate here.
+            # 2 is the duplicate 
+            # in normal case this would have worked, but in this case, they are pointing to themselves
+            # that is fast = nums[nums[4]] = nums[2] = 4, slow = nums[4] = 2
+            # fast is just pointing to itself and slow is stuck in a loop
+
+
+            # we just know that there is a cycle
+            # but we dont know if its the duplicate
+
+            # The duplicate value 2 leads to a cycle because it occurs more than once, 
+            # and both occurrences point back to the same next index (index 2), creating a cycle.
+            # The pointers do not need to visit every instance of the duplicate value directly; 
+            # instead, they need to detect the cycle caused by the repeated index access which is the signature of a duplicate.
+
+        slow2 = 0
+        while slow != slow2:
+            slow2 = nums[slow2]
+            slow = nums[slow]
+
+        return slow
+        
+
+"""
+   
+                
+anyways, looks like to search across a grid, dfs is inevitable, but to effectively reduce paths in search, we are using prefix tree (Trie) to avoid non essential paths ?
+ChatGPT
+Yes, you've summarized the essence of using a trie in the word search problem quite accurately. DFS is indeed a common approach for exploring all possible paths in a grid-based puzzle like this, and the trie (prefix tree) is employed to efficiently reduce the number of paths explored by cutting off those that cannot lead to valid words early in the search process. This combination allows for deep exploration while maintaining efficiency by pruning non-viable options.
+
+Alternatives to Using Trie and Why Trie is Preferable:
+Let's explore other potential methods and compare why a trie might be favored over alternatives like hashmaps in this specific context:
+
+Using Hashmaps:
+Method: Store each word in a hashmap and as you explore each path in the DFS, construct the word and check if it exists in the hashmap.
+Limitations:
+Space Complexity: While a hashmap provides constant time complexity for lookups, storing every possible prefix of each word (necessary for effective pruning during DFS) could significantly increase the memory usage.
+Efficiency in Pruning: Unlike tries, hashmaps do not inherently support prefix-based pruning. To achieve similar pruning, you'd need to store all possible prefixes of all words, which isn't space-efficient.
+Using HashSet for Words and Prefixes:
+Method: Similar to using a hashmap but involves storing all words and their prefixes in a set for O(1) access.
+Limitations:
+Memory Usage: You end up storing a large number of prefixes, especially for longer words, which can be memory-intensive.
+Construction Overhead: Every insertion requires adding not only the word but all its prefixes to the set, increasing the setup time.
+Bloom Filters:
+Method: A space-efficient probabilistic data structure that can be used to test whether an element is a member of a set, suitable for situations where some false positives are tolerable.
+Limitations:
+False Positives: While bloom filters are space-efficient, they can yield false positives, which could lead to unnecessary exploration in DFS.
+No Prefix Support: Like hashmaps, they don’t inherently support prefix checks unless combined with other structures.
+Why Trie is Preferable:
+Prefix Efficiency: Tries provide an inherent advantage in prefix-based searches, which is crucial in this problem. They allow for checking and pruning paths based on prefixes dynamically as the search progresses.
+Space Efficiency for Prefixes: While tries do consume space, they store common prefixes once, which is typically more space-efficient than storing all prefixes separately in a hashmap or set.
+Direct Support for Word Completion: Tries not only manage prefixes efficiently but also seamlessly handle the check for complete words by simply marking nodes as word nodes.
+DFS and Trie Working Together:
+Optimal Pruning: As you traverse the grid with DFS, each step checks against the trie. If no children nodes correspond to the next board character, the path is pruned immediately.
+Efficient Backtracking: Trie helps ensure that each recursive call in the DFS has the potential to lead to a valid word, thus making the backtracking that does occur meaningful and necessary.
+
+"""
+
+class TrieNode:
+    def __init__(self):
+        self.children = {}
+        self.word = None
+
+class Trie:
+    def __init__(self):
+        self.root = TrieNode()
+
+    def insert(self, word):
+        curr = self.root
+        for c in word:
+            if c not in curr.children:
+                curr.children[c] = TrieNode()
+            curr = curr.children[c]
+        
+        curr.word = word
+
+    def search(self, word):
+        curr = self.root
+        for c in word:
+            if c not in curr.children:
+                return False
+            curr = curr.children[c]
+        return curr.word
+
+
+class Solution:
+    def findWords(self, board: List[List[str]], words: List[str]) -> List[str]:
+
+        trie = Trie()
+        for word in words:
+            trie.insert(word)
+
+        result = set() # to prevent adding the same words founds through different paths
+
+        rows, columns = len(board), len(board[0])
+
+        # lets define dfs
+        def dfs(r,c,node, visited):
+
+            if (r< 0 or r >= rows or c <0 or c >= columns or
+                (r,c) in visited or board[r][c] not in node.children):
+                return 
+
+            visited.add((r,c))
+            node = node.children[board[r][c]]
+
+            if node.word:
+                result.add(node.word)
+                node.word = None
+            dfs(r+1,c, node,visited)
+            dfs(r,c+1, node, visited)
+            dfs(r-1, c, node, visited)
+            dfs(r,c-1, node, visited)
+
+            visited.remove((r,c))
+
+
+
+        # we need to search words, that can emanate from each cell and the 4 paths from it
+        for r in range(rows):
+            for c in range(columns):
+                dfs(r,c,trie.root, set()) # for each combinattion of r,c, we initiate a visited set as we we cannot use the same cell twice
 
         
+
+        return list(result)
+    
+
+"""
+Time Complexity:
+DFS Complexity : we initate a DFS from each cell and from there 4 other dfs calls, so, 4^m*n or
+but due to back tracking and trie based pruning not all paths are explored, so 4^L, where L is the length of the largest word
+Trie Look up : O(1) for each character for each word at any point we only check one point
+Total = O(m*n*4^L), where m and n are rows and columns
+Space Complexity:
+Trie Storage: O(n*m), where n is the number of words and m is the avg length of the words
+DFS Stack: we need to remember all the recursion variable for each recursion call and this depends on the size of the longest word
+O(L)
+Visited Set : each dfs call, creates a visited set to store cells, to track characters and it depends on the longest word.
+So, O(L)
+Total = O(n*m + L)
+
+"""
+
+class TrieNode:
+    def __init__(self):
+        self.children = {}
+        self.word = False
+
+class WordDictionary:
+    def __init__(self):
+        self.root = TrieNode()
+        
+
+    def addWord(self, word: str) -> None:
+        curr = self.root
+        for c in word:
+            if c not in curr.children:
+                curr.children[c] = TrieNode()
+            curr = curr.children[c]
+        curr.word = True
+        
+    """
+    def search(self, word: str) -> bool:
+        curr = self.root
+        for c in word:
+            if c not in curr.children:
+                return False
+            curr = curr.children[c]
+        return curr.word
+    """
+
+    def search(self, word) :
+        return self._search(word, 0, self.root)
+
+
+    def _search(self, word, index, node):
+        if index == len(word): #if no dots, then simply, if you were able to reach the end, then return that the word is found
+            return node.word  # works for both words that does not have any "." and also for words that have "." to search sequences later.
+
+        char = word[index]
+        if char == ".":
+
+            # search all the paths of all children from here
+            # we m
+            for child in node.children.values():
+                if self._search(word, index+1, child):
+                    return True
+            return False
+
+        else:
+            if char not in node.children:
+                return False
+            return self._search(word, index+1, node.children[char])
+        
+
+
+class Solution:
+    def hasCycle(self, head: Optional[ListNode]) -> bool:
+        # use two pointer fast and slow
+        slow = fast =head
+        while fast and fast.next:
+            slow = slow.next
+            fast = fast.next.next
+            if slow == fast:
+                return True
+        return False
+    
+
+
+class WordFilter:
+
+    def __init__(self, words: List[str]):
+
+        # use a dictionary to store index value for each prefix and suffix possible
+        # and we combine them using a separator
+        # using a separatot helps avoid ambiguities
+        # Consider a scenario with a prefix "ab" and a suffix "cd". 
+        # Without a separator, the key becomes "abcd". 
+        # This could also be interpreted as a prefix "abc" and a suffix "d", 
+        # or any other valid combination that forms "abcd".
+
+        self.lookup = {}
+        for index, word in enumerate(words):
+            length = len(word)
+            for i in range(length+1):
+                for j in range(length + 1) : # +1 to account for empty suffix and prefixes
+                    prefix = word[:i]
+                    suffix = word[-j:] if j != 0 else ""
+                    key = prefix + "#" + suffix
+
+                    if key in self.lookup:
+                        # Always store the maximum index for this prefix-suffix pair
+                        self.lookup[key] = max(self.lookup[key], index)
+                    else:
+                        self.lookup[key] = index
+
+                    #self.lookup[prefix + "#" + suffix] = index
+        
+
+    def f(self, pref: str, suff: str) -> int:
+        key = pref + "#" + suff
+        return self.lookup.get(key,-1)        
+    
+
+    # Time Complexity = O(n*k^2) where n is the number of words and k is the length of the longest word
+    # Space Complexity is similar to construct hashmap for n*k^2 combinations
+    # but this was manageable as suff and pref can only be maximum of 7 characters and we have a total of 14 characters at the max.
