@@ -3204,3 +3204,199 @@ class WordFilter:
     # Time Complexity = O(n*k^2) where n is the number of words and k is the length of the longest word
     # Space Complexity is similar to construct hashmap for n*k^2 combinations
     # but this was manageable as suff and pref can only be maximum of 7 characters and we have a total of 14 characters at the max.
+
+
+"""
+class WordFilter:
+
+    def __init__(self, words: List[str]):
+
+        # use a dictionary to store index value for each prefix and suffix possible
+        # and we combine them using a separator
+        # using a separator helps avoid ambiguities
+        # Consider a scenario with a prefix "ab" and a suffix "cd". 
+        # Without a separator, the key becomes "abcd". 
+        # This could also be interpreted as a prefix "abc" and a suffix "d", 
+        # or any other valid combination that forms "abcd".
+
+        self.lookup = {}
+        for index, word in enumerate(words):
+            length = len(word)
+            for i in range(length+1):
+                for j in range(length + 1) : # +1 to account for empty suffix and prefixes
+                    prefix = word[:i]
+                    suffix = word[-j:] if j != 0 else ""
+                    key = prefix + "#" + suffix
+
+                    if key in self.lookup:
+                        # Always store the maximum index for this prefix-suffix pair
+                        self.lookup[key] = max(self.lookup[key], index)
+                    else:
+                        self.lookup[key] = index
+
+                    #self.lookup[prefix + "#" + suffix] = index
+        
+
+    def f(self, pref: str, suff: str) -> int:
+        key = pref + "#" + suff
+        return self.lookup.get(key,-1)        
+"""
+
+    # Time Complexity = O(n*k^2) where n is the number of words and k is the length of the longest word
+    # Space Complexity is similar to construct hashmap for n*k^2 combinations
+    # but this was manageable as suff and pref can only be maximum of 7 characters and we have a total of 14 characters at the max.
+
+
+
+# generally we use tree nodes for search, and just to check if the word ends at the current character
+# by adding a trienode at every character in the word
+
+# but this problem asks for indices, so we are better of storing the indices of the word, at each character node in the word
+# so that once the word is found, we can return the max of it
+
+# we use both prefix and suffix trees to reduce the space complexity
+# search time complexity is O(1) for each character and it will then be O(m)
+# space complexity is O(m*n) where m is average length
+
+"""
+class TrieNode:
+    def __init__(self):
+        self.children = {}
+        #self.index = set()
+        self.index = []
+
+class Trie:
+    def __init__(self):
+        self.root = TrieNode()
+
+    def insert(self, word, index):
+        curr = self.root
+        for c in word:
+            if c not in curr.children:
+                curr.children[c] = TrieNode()
+            curr = curr.children[c]
+            #curr.index.add(index)
+            curr.index.append(index)
+    def search(self, word):
+        curr = self.root
+        for c in word:
+            if c not in curr.children:
+                # return set()
+                return []
+            curr = curr.children[c]
+        return curr.index
+
+class WordFilter:
+
+    def __init__(self, words: List[str]):
+        # create prefix and suffix tree
+        self.prefixTree = Trie()
+        self.suffixTree = Trie()
+
+        for index, word in enumerate(words):
+            self.prefixTree.insert(word, index)
+            self.suffixTree.insert(word[::-1], index)
+
+
+    def f(self, pref: str, suff: str) -> int:
+
+        pref_index = self.prefixTree.search(pref)
+        suff_index = self.suffixTree.search(suff[::-1])
+
+        if pref_index == [] or suff_index == []:
+            return -1
+
+        #if pref_index is None or suff_index is None:
+        #if not pref_index or not suff_index :
+        #    return -1
+
+        result = -1
+        pref_index_set = set(pref_index)
+        for index in suff_index:
+            if index in pref_index_set:
+                result = max(result, index)
+
+        
+        common_index = pref_index & suff_index
+        if common_index : 
+            return max(common_index)
+        return -1
+        
+        return result
+
+"""
+
+# as data is naturally sorted, I mean we insert the words in a sequential order one word after word
+# so, last word will have the largest index, and it makes sense to search from the back side
+# instead of converting to sets, everytime, as they say about 10^4 calls will be made.
+class TrieNode:
+    def __init__(self):
+        self.children = {}
+        self.indices = []  # Stores indices of words that reach this node
+
+class Trie:
+    def __init__(self):
+        self.root = TrieNode()
+
+    def insert(self, word, index):
+        node = self.root
+        for char in word:
+            if char not in node.children:
+                node.children[char] = TrieNode()
+            node = node.children[char]
+            node.indices.append(index)  # Append index at every node down the path
+
+    def search(self, word):
+        node = self.root
+        for char in word:
+            if char not in node.children:
+                return []
+            node = node.children[char]
+        return node.indices
+
+
+
+class WordFilter:
+    def __init__(self, words):
+        self.prefix_trie = Trie()
+        self.suffix_trie = Trie()
+        for index, word in enumerate(words):
+            self.prefix_trie.insert(word, index)  # Insert normally for prefix
+            self.suffix_trie.insert(word[::-1], index)  # Insert reversed for suffix
+
+    def f(self, pref, suff):
+        pref_indices = self.prefix_trie.search(pref)
+        suff_indices = self.suffix_trie.search(suff[::-1])  # Reverse the suffix to search in suffix trie
+        
+        if suff_indices == [] or pref_indices == []:
+            return -1
+        
+        i,j = len(pref_indices)-1, len(suff_indices)-1
+        while i >= 0 and j >= 0:
+            if pref_indices[i] == suff_indices[j]:
+                return pref_indices[i]
+            if pref_indices[i] > suff_indices[j]:
+                i -= 1
+            else:
+                j -= 1
+        return -1
+        
+        
+        
+        """
+        # Find the maximum index present in both lists
+        result = -1
+        pref_set = set(pref_indices)
+        for index in suff_indices:
+            if index in pref_set:
+                result = max(result, index)
+        return result
+
+        """
+
+
+
+
+# Your WordFilter object will be instantiated and called as such:
+# obj = WordFilter(words)
+# param_1 = obj.f(pref,suff)
