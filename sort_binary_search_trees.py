@@ -3400,3 +3400,99 @@ class WordFilter:
 # Your WordFilter object will be instantiated and called as such:
 # obj = WordFilter(words)
 # param_1 = obj.f(pref,suff)
+
+
+
+class UnionFind:
+    def __init__(self,size):
+        self.parent = list(range(size))
+        self.rank = [0]*size
+
+    def find(self,p):
+        if self.parent[p] != p:
+            self.parent[p] = self.find(self.parent[p]) # find the parent of each node, and set it directly
+            # after path compression for a simple graph
+            # Union(1, 2), Union(2, 3), Union(3, 4), Union(4, 5) would be
+            # parent = [0, 1, 2, 3, 4, 5] 
+            # initally, it would be parent = [0, 1, 2, 3, 4, 5] 
+            # with path compression, we set the parent to the root, while returning each recursion call directly
+            # so, when we call find to find the parent of a node again, it goes directly to 
+            # root, and stops there as root is the parent of itself and returns it
+            # and thus, we need not do the entire traversal again.
+        return self.parent[p]
+
+    def union(self,p,q):
+        rootP = self.find(p)
+        rootQ = self.find(q)
+        if rootP == rootQ:
+            return False
+        # rank doesnot specifically imply the no. of nodes or the height of the tree.
+        # it only signifies, how the height of the tree alters when two trees of same height are added
+        # if we have 2 under 1 and if we have 4 under 3 and if we have an edge 1,3, then 3 with its child 4 would go under 1
+        # increasing the depth of the tree, and the rank would for 1 would be 2 which indicates the depth of the tree
+        # note that without rank, if we have sequential edges, we will have a deep tree although we get roots quickly with 
+        # path compression. So, union by rank, still complements path compresssion by reducing the depth along with path compresssion.
+        # path compression helps in falttening while find
+        # ranking helps in reducing depth, while unioning, prevents deep trees.
+
+
+        """
+        Union Operations: Union by rank determines the structure immediately when a union is executed, deciding how trees are merged based on their current depths (ranks).
+        Find Operations: Path compression is applied, ensuring that the tree remains flat after multiple finds, improving the time complexity of subsequent finds.
+        """
+        if self.rank[rootP] > self.rank[rootQ]:
+            self.parent[rootQ] = rootP
+        elif self.rank[rootQ] > self.rank[rootP]:
+            self.parent[rootP] = rootQ
+        else:
+            self.parent[rootQ] = rootP
+            self.rank[rootP] +=1
+        return True
+
+class Solution:
+    def findRedundantConnection(self, edges: List[List[int]]) -> List[int]:
+        n = len(edges)
+        uf = UnionFind(n+1)
+
+        for a,b in edges:
+            if not uf.union(a,b):
+                return [a,b]
+
+
+"""
+Space Complexity
+Parent Array: Stores the parent or representative of each element in the Union-Find data structure. Since there are 
+n nodes in the graph, this array will also have n elements.
+Rank Array: Stores the rank (or approximate depth) of the tree for which each node is a root. This also requires n elements.
+Total Space Complexity: O(n). This space is required to maintain the state of the Union-Find structure for 
+n elements, where each element has a corresponding entry in both the parent and rank arrays.
+
+Time Complexity
+Union Operations: For n nodes with n edges (one more than a typical tree due to the extra edge), you'll perform at most n union operations.
+Find Operations: Each union operation potentially involves multiple find operations (exactly two per union, one for each node of the edge).
+The efficiency of union and find operations in a Union-Find structure with path compression and union by rank is very high. Specifically:
+
+Path Compression: This optimization ensures that the trees remain very flat, which dramatically speeds up subsequent find operations by effectively limiting the tree height.
+Union by Rank: This optimization helps keep the tree depth low, which prevents the structure from degrading into a linked list (which would have poor performance for find operations).
+The combined effect of path compression and union by rank gives the find operation a nearly constant time complexity on average. 
+The complexity of each union and find operation in this scenario can be described by the Inverse Ackermann function, denoted as 
+α(n), which grows very slowly—so slowly that it can be considered almost constant for all practical purposes:
+
+Time Complexity: O(nα(n)), where α(n) is the inverse Ackermann function. Since 
+α(n) is less than 5 for all practical values of n (up to billions or more), the time complexity is effectively O(n) for practical input sizes.
+"""
+
+class Solution:
+    def reconstructQueue(self, people: List[List[int]]) -> List[List[int]]:
+        
+        def key_sort(person):
+            h, k = person
+            return (-h,k)
+        people.sort(key = key_sort)
+
+        queue = []
+        for person in people:
+            queue.insert(person[1], person)
+        # each insert has the potential for O(n) operations
+
+        return queue
